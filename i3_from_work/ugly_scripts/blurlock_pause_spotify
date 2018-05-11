@@ -1,0 +1,32 @@
+#!/bin/bash
+scrot /tmp/screenshot.png
+
+# detect which workspaces are visible
+visible=$(
+i3-msg -t get_workspaces \
+      | jq '.[] | select(.visible==true).num'
+)
+
+current=$(
+i3-msg -t get_workspaces \
+      | jq '.[] | select(.focused==true).num'
+)
+
+
+# stop Spotify
+scripts=$HOME/scripts
+send_to_spotify=$scripts/send_keystrokes_to_spotify.sh
+if [ -e $send_to_spotify ]; then 
+    $send_to_spotify space
+fi
+# lol lol lol lol
+
+# go back to where we were
+for w in $visible; do
+    i3-msg -t command "workspace $w"
+done
+i3-msg -t command "workspace $current"
+
+convert /tmp/screenshot.png -blur 0x5 /tmp/screenshotblur.png
+rm /tmp/screenshot.png
+i3lock -i /tmp/screenshotblur.png
